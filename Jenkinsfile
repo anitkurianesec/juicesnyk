@@ -1,14 +1,10 @@
 pipeline {
     agent any
 
-    // Install the Jenkins tools you need for your project / environment
     tools {
-        maven 'maven-3.6.0' // Refers to a global tool configuration for Maven called 'maven-3.6.0'
+        maven 'maven-3.6.0' // Ensure this is configured in Jenkins
     }
 
-    // Pull your Snyk token from a Jenkins encrypted credential
-    // (type "Secret text"... see https://jenkins.io/doc/book/using/using-credentials/#adding-new-global-credentials)
-    // and put it in temporary environment variable for the Snyk CLI to consume.
     environment {
         SNYK_TOKEN = credentials('4ec3242d-7bf8-4c01-b668-db2aa9ab0d91')
     }
@@ -17,18 +13,16 @@ pipeline {
 
         stage('Initialize & Cleanup Workspace') {
             steps {
-               echo 'Initialize & Cleanup Workspace'
+               echo 'Cleaning workspace...'
                sh 'ls -la'
                sh 'rm -rf *'
-               sh 'rm -rf .git'
-               sh 'rm -rf .gitignore'
                sh 'ls -la'
             }
         }
 
         stage('Git Clone') {
             steps {
-                git url: 'https://github.com/anitkurianesec/juicesnyk.git'
+                git branch: 'main', url: 'https://github.com/anitkurianesec/juicesnyk.git'
                 sh 'ls -la'
             }
         }
@@ -40,19 +34,12 @@ pipeline {
             }
         }
 
-        // Not required if just install the Snyk CLI on your Agent
         stage('Download Snyk CLI') {
             steps {
                 sh '''
-                    latest_version=$(curl -Is "https://github.com/snyk/snyk/releases/latest" | grep "^location" | sed s#.*tag/##g | tr -d "\r")
-                    echo "Latest Snyk CLI Version: ${latest_version}"
-
-                    snyk_cli_dl_linux="https://github.com/snyk/snyk/releases/download/${latest_version}/snyk-linux"
-                    echo "Download URL: ${snyk_cli_dl_linux}"
-
-                    curl -Lo ./snyk "${snyk_cli_dl_linux}"
+                    curl -Lo snyk "https://github.com/snyk/snyk/releases/download/v1.1240.0/snyk-linux"
                     chmod +x snyk
-                    ls -la
+                    export PATH=$PWD:$PATH
                     ./snyk -v
                 '''
             }
@@ -64,26 +51,21 @@ pipeline {
             }
         }
 
-        // Run snyk test to check for vulnerabilities and fail the build if any are found
-        // Consider using --severity-threshold=<low|medium|high> for more granularity (see snyk help for more info).
         stage('Snyk Test using Snyk CLI') {
             steps {
-                sh './snyk test'
+                sh 'export PATH=$PWD:$PATH && ./snyk test'
             }
         }
 
-        // Capture the dependency tree for ongoing monitoring in Snyk.
-        // This is typically done after deployment to some environment (ex staging, test, production, etc).
         stage('Snyk Monitor using Snyk CLI') {
             steps {
-                // Use your own Snyk Organization with --org=<your-org>
-                sh './snyk monitor --org=demo-applications'
+                sh 'export PATH=$PWD:$PATH && ./snyk monitor --org=your-org-name'
             }
         }
+
         stage('Snyk Code Scan') {
             steps {
-                // Use your own Snyk Organization with --org=<your-org>
-                sh './snyk code test'
+                sh 'export PATH=$PWD:$PATH && ./snyk code test'
             }
         }
     }
