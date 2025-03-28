@@ -79,6 +79,12 @@ pipeline {
                 // Use your own Snyk Organization with --org=<your-org>
                 sh './snyk monitor --org=demo-applications'
             }
+
+        stage('Snyk Code Scan') {
+            steps {
+                // Use your own Snyk Organization with --org=<your-org>
+                sh './snyk code test'
+            }
         }
     }
 }
