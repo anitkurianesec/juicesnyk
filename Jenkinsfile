@@ -63,10 +63,16 @@ pipeline {
             }
         }
 
-        stage('Snyk Code Scan') {
-            steps {
-                sh 'export PATH=$PWD:$PATH && ./snyk code test'
-            }
+       stage('Snyk Code Scan') {
+           steps {
+        script {
+            echo 'Running Snyk Code Test...'
+            sh '''
+                export PATH=$PWD:$PATH
+                ./snyk auth $SNYK_TOKEN
+                ls -la
+                ./snyk code test --org=your-org-name --debug
+            '''
         }
     }
 }
