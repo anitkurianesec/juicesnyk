@@ -13,6 +13,19 @@ pipeline {
                 sh 'ls -la'
                 sh 'rm -rf *'
                 sh 'ls -la'
+
+                // Install Maven
+                echo 'Installing Maven...'
+                sh '''
+                    if ! command -v mvn &> /dev/null
+                    then
+                        echo "Maven could not be found, installing..."
+                        sudo apt-get update -y
+                        sudo apt-get install -y maven
+                    else
+                        echo "Maven is already installed."
+                    fi
+                '''
             }
         }
 
