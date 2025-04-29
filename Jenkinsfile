@@ -49,8 +49,34 @@ pipeline {
 
         stage('Snyk Test using Snyk CLI') {
             steps {
-                sh 'export PATH=$PWD:$PATH && ./snyk test'
+                sh '''
+                    export PATH=$PWD:$PATH
+                    ./snyk test
+                '''
             }
         }
 
-        stage('S
+        stage('Snyk Monitor using Snyk CLI') {
+            steps {
+                sh '''
+                    export PATH=$PWD:$PATH
+                    ./snyk monitor --org=your-org-name
+                '''
+            }
+        }
+
+        stage('Snyk Code Scan') {
+            steps {
+                script {
+                    echo 'Running Snyk Code Test...'
+                    sh '''
+                        export PATH=$PWD:$PATH
+                        ./snyk auth $SNYK_TOKEN
+                        ls -la
+                        ./snyk code test --org=your-org-name --debug
+                    '''
+                }
+            }
+        }
+    }
+}
