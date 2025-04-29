@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SNYK_TOKEN = credentials('4ec3242d-7bf8-4c01-b668-db2aa9ab0d91')
+        SNYK_TOKEN = credentials('snyk')
     }
 
     stages {
