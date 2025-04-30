@@ -63,7 +63,7 @@ pipeline {
               sh 'mvn package'
             }
         }
-         stage('Snyk Code Test using Snyk CLI') {
+        stage('Snyk Code Test using Snyk CLI') {
             steps {
                 // Use your own Snyk Organization with --org=<your-org>
                 sh './snyk code test --org=eSecForte NFR - Shared'
