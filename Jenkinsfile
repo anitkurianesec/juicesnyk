@@ -63,6 +63,11 @@ pipeline {
               sh 'mvn package'
             }
         }
+         stage('Snyk Code Test using Snyk CLI') {
+            steps {
+                // Use your own Snyk Organization with --org=<your-org>
+                sh './snyk code test --org=eSecForte NFR - Shared'
+            }
 
         // Run snyk test to check for vulnerabilities and fail the build if any are found
         // Consider using --severity-threshold=<low|medium|high> for more granularity (see snyk help for more info).
@@ -77,7 +82,7 @@ pipeline {
         stage('Snyk Monitor using Snyk CLI') {
             steps {
                 // Use your own Snyk Organization with --org=<your-org>
-                sh './snyk monitor --org=demo-applications'
+                sh './snyk monitor --org=eSecForte NFR - Shared'
             }
         }
     }
