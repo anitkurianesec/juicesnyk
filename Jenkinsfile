@@ -1,28 +1,21 @@
 pipeline {
     agent any
 
-    // Install the Jenkins tools you need for your project / environment
     tools {
-        maven 'jenkins-maven' // Refers to a global tool configuration for Maven called 'maven-3.6.3'
+        maven 'jenkins-maven' // Use the globally configured Maven named 'jenkins-maven'
     }
 
-    // Pull your Snyk token from a Jenkins encrypted credential
-    // (type "Secret text"... see https://jenkins.io/doc/book/using/using-credentials/#adding-new-global-credentials)
-    // and put it in temporary environment variable for the Snyk CLI to consume.
     environment {
-        SNYK_TOKEN = credentials('Snyk_token')
+        SNYK_TOKEN = credentials('Snyk_token') // Jenkins credential ID for Snyk
     }
 
     stages {
 
         stage('Initialize & Cleanup Workspace') {
             steps {
-               echo 'Initialize & Cleanup Workspace'
-               sh 'ls -la'
-               sh 'rm -rf *'
-               sh 'rm -rf .git'
-               sh 'rm -rf .gitignore'
-               sh 'ls -la'
+                echo 'Initialize & Cleanup Workspace'
+                sh 'rm -rf * .git .gitignore'
+                sh 'ls -la'
             }
         }
 
@@ -40,19 +33,12 @@ pipeline {
             }
         }
 
-        // Not required if just install the Snyk CLI on your Agent
         stage('Download Snyk CLI') {
             steps {
                 sh '''
-                    latest_version=$(curl -Is "https://github.com/snyk/cli/releases/download/v1.1296.2/snyk-linux" | grep "^location" | sed s#.*tag/##g | tr -d "\r")
-                    echo "Latest Snyk CLI Version: ${latest_version}"
-
-                    snyk_cli_dl_linux="https://github.com/snyk/cli/releases/download/v1.1296.2/snyk-linux"
-                    echo "Download URL: ${snyk_cli_dl_linux}"
-
-                    curl -Lo ./snyk "${snyk_cli_dl_linux}"
+                    echo "Downloading Snyk CLI..."
+                    curl -Lo snyk https://github.com/snyk/cli/releases/download/v1.1296.2/snyk-linux
                     chmod +x snyk
-                    ls -la
                     ./snyk -v
                 '''
             }
@@ -60,31 +46,26 @@ pipeline {
 
         stage('Build') {
             steps {
-              sh 'mvn package'
-            }
-        }
-        stage('Snyk Code Test using Snyk CLI') {
-            steps {
-                // Use your own Snyk Organization with --org=<your-org>
-                sh './snyk code test --org=eSecForte NFR - Shared'
-            }
-
-        // Run snyk test to check for vulnerabilities and fail the build if any are found
-        // Consider using --severity-threshold=<low|medium|high> for more granularity (see snyk help for more info).
-        stage('Snyk Test using Snyk CLI') {
-            steps {
-                sh './snyk test'
+                sh 'mvn package'
             }
         }
 
-        // Capture the dependency tree for ongoing monitoring in Snyk.
-        // This is typically done after deployment to some environment (ex staging, test, production, etc).
-        stage('Snyk Monitor using Snyk CLI') {
+        stage('Snyk Code Test using CLI') {
             steps {
-                // Use your own Snyk Organization with --org=<your-org>
-                sh './snyk monitor --org=eSecForte NFR - Shared'
+                sh './snyk code test --org="eSecForte NFR - Shared"'
+            }
+        }
+
+        stage('Snyk Test using CLI') {
+            steps {
+                sh './snyk test --org="eSecForte NFR - Shared"'
+            }
+        }
+
+        stage('Snyk Monitor using CLI') {
+            steps {
+                sh './snyk monitor --org="eSecForte NFR - Shared"'
             }
         }
     }
-}
 }
