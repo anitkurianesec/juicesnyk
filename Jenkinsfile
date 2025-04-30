@@ -10,7 +10,7 @@ pipeline {
     // (type "Secret text"... see https://jenkins.io/doc/book/using/using-credentials/#adding-new-global-credentials)
     // and put it in temporary environment variable for the Snyk CLI to consume.
     environment {
-        SNYK_TOKEN = credentials('SNYK_TOKEN')
+        SNYK_TOKEN = credentials('Snyk_token')
     }
 
     stages {
