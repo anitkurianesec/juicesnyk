@@ -30,6 +30,14 @@ pipeline {
             }
         }
 
+        stage('Initial Maven Build') {
+            steps {
+                dir('juiceshop') { // Change to your repo's folder if applicable
+                    sh 'mvn clean install'
+                }
+            }
+        }
+
         stage('Download Snyk CLI') {
             steps {
                 sh '''
@@ -43,25 +51,31 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn package'
+                dir('juiceshop') { // Ensure it runs inside project folder
+                    sh 'mvn package'
+                }
             }
         }
 
         stage('Snyk Test using Snyk CLI') {
             steps {
-                sh '''
-                    export PATH=$PWD:$PATH
-                    ./snyk test
-                '''
+                dir('juiceshop') {
+                    sh '''
+                        export PATH=$WORKSPACE:$PATH
+                        ../snyk test
+                    '''
+                }
             }
         }
 
         stage('Snyk Monitor using Snyk CLI') {
             steps {
-                sh '''
-                    export PATH=$PWD:$PATH
-                    ./snyk monitor --org=your-org-name
-                '''
+                dir('juiceshop') {
+                    sh '''
+                        export PATH=$WORKSPACE:$PATH
+                        ../snyk monitor --org=your-org-name
+                    '''
+                }
             }
         }
 
@@ -69,12 +83,14 @@ pipeline {
             steps {
                 script {
                     echo 'Running Snyk Code Test...'
-                    sh '''
-                        export PATH=$PWD:$PATH
-                        ./snyk auth $SNYK_TOKEN
-                        ls -la
-                        ./snyk code test --org=your-org-name --debug
-                    '''
+                    dir('juiceshop') {
+                        sh '''
+                            export PATH=$WORKSPACE:$PATH
+                            ../snyk auth $SNYK_TOKEN
+                            ls -la
+                            ../snyk code test --org=your-org-name --debug
+                        '''
+                    }
                 }
             }
         }
