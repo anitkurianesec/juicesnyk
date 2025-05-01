@@ -55,7 +55,7 @@ pipeline {
 
         stage('Snyk Test using CLI') {
             steps {
-                sh './snyk test'
+                sh './snyk test --maven-aggregate-project'
             }
         }
 
