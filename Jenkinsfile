@@ -49,19 +49,19 @@ pipeline {
 
         stage('Snyk Code Test using CLI') {
             steps {
-                sh './snyk code test --org="eSecForte NFR - Shared"'
+                sh './snyk code test'
             }
         }
 
         stage('Snyk Test using CLI') {
             steps {
-                sh './snyk test --org="eSecForte NFR - Shared"'
+                sh './snyk test'
             }
         }
 
         stage('Snyk Monitor using CLI') {
             steps {
-                sh './snyk monitor --org="eSecForte NFR - Shared"'
+                sh './snyk monitor'
             }
         }
     }
