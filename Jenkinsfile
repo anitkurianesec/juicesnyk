@@ -32,11 +32,7 @@ pipeline {
                 sh 'mvn -v'
             }
         }
-       """ stage('Build') {
-            steps {
-                sh 'mvn package'
-            }
-        }"""
+      
 
         stage('Download Snyk CLI') {
             steps {
