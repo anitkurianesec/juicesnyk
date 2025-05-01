@@ -32,6 +32,11 @@ pipeline {
                 sh 'mvn -v'
             }
         }
+        stage('Build') {
+            steps {
+                sh 'mvn package'
+            }
+        }
 
         stage('Download Snyk CLI') {
             steps {
@@ -44,11 +49,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                sh 'mvn package'
-            }
-        }
+        
 
         stage('Snyk Code Test using CLI') {
             steps {
