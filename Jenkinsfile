@@ -2,15 +2,14 @@ pipeline {
     agent any
 
     tools {
-        maven 'jenkins-maven' // Use the globally configured Maven named 'jenkins-maven'
+        maven 'jenkins-maven'
     }
 
     environment {
-        SNYK_TOKEN = credentials('Snyk_token') // Jenkins credential ID for Snyk
+        SNYK_TOKEN = credentials('Snyk_token')
     }
 
     stages {
-
         stage('Initialize & Cleanup Workspace') {
             steps {
                 echo 'Initialize & Cleanup Workspace'
@@ -32,7 +31,6 @@ pipeline {
                 sh 'mvn -v'
             }
         }
-      
 
         stage('Download Snyk CLI') {
             steps {
@@ -45,21 +43,16 @@ pipeline {
             }
         }
 
-        
-
         stage('Snyk Code Test using CLI') {
             steps {
                 sh './snyk code test'
             }
         }
 
-        pipeline {
-    agent any
-    stages {
-        ...
-        ...
+        stage('Snyk Open Source Test (Allow Failures)') {
+            steps {
                 script {
-                    def snykStatus = sh(script: 'snyk test || true', returnStatus: true)
+                    def snykStatus = sh(script: './snyk test || true', returnStatus: true)
                     if (snykStatus != 0) {
                         echo "Snyk found vulnerabilities but continuing pipeline"
                         currentBuild.result = 'UNSTABLE'
@@ -67,13 +60,6 @@ pipeline {
                 }
             }
         }
-        stage('Snyk Monitor') {
-            steps {
-                sh 'snyk monitor'
-            }
-        }
-    }
-}
 
         stage('Snyk Monitor using CLI') {
             steps {
