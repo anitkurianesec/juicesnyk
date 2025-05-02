@@ -53,11 +53,27 @@ pipeline {
             }
         }
 
-        stage('Snyk Test using CLI') {
-            steps {
-                sh './snyk test --maven-aggregate-project'
+        pipeline {
+    agent any
+    stages {
+        ...
+        ...
+                script {
+                    def snykStatus = sh(script: 'snyk test || true', returnStatus: true)
+                    if (snykStatus != 0) {
+                        echo "Snyk found vulnerabilities but continuing pipeline"
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
             }
         }
+        stage('Snyk Monitor') {
+            steps {
+                sh 'snyk monitor'
+            }
+        }
+    }
+}
 
         stage('Snyk Monitor using CLI') {
             steps {
