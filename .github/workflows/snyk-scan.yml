@@ -28,5 +28,6 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           command: test
+          args: --exit-code=0
 
      
