@@ -24,15 +24,10 @@ jobs:
         run: npm install
 
       - name: Run Snyk to check for vulnerabilities
-        uses: actions/checkout@master
+        name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
           command: test
 
-      - name: Monitor project in Snyk
-        uses: actions/checkout@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: monitor
+     
