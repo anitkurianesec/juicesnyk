@@ -1,13 +1,12 @@
-name: Snyk Scan
+name: Snyk Vulnerability Scan
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
 
 jobs:
-  security:
+  snyk_scan:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,8 +20,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@v1.12.0
+      - name: Snyk Open Source Scan
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
