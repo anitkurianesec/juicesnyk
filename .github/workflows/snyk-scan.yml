@@ -38,6 +38,14 @@ jobs:
         with:
           command: monitor
 
+      - name: Testing for Code Vulnerabilties
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: code test
+
           
 
      
