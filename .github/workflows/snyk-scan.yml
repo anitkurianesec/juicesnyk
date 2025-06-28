@@ -1,4 +1,4 @@
-name: Snyk Security Scan
+name: Snyk Scan
 
 on:
   push:
@@ -7,11 +7,12 @@ on:
     branches: [ main ]
 
 jobs:
-  security:
+  snyk:
+    name: Snyk Scan for Node.js
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -19,28 +20,19 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Node dependencies
+      - name: Install dependencies
         run: npm install
 
-      - name: Set up Java and Maven
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'maven'
-
-      - name: Build Maven project
-        run: mvn install -DskipTests
-
-      - name: Set up Snyk CLI
+      - name: Run Snyk to check for vulnerabilities
         uses: actions/checkout@master
-
-      - name: Run Snyk Test on All Projects
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk test --all-projects --exit-code=0
+        with:
+          command: test
 
-      - name: Monitor Projects in Snyk
+      - name: Monitor project in Snyk
+        uses: actions/checkout@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk monitor --all-projects
+        with:
+          command: monitor
