@@ -54,6 +54,13 @@ jobs:
         with:
           command: sbom --format cyclonedx1.4+json --json-file-output mySBOM.json
 
+      - name: Upload SBOM file
+        uses: actions/upload-artifact@v3
+        with:
+          name: snyk-sbom
+          path: mySBOM.json
+
+
 
           
 
