@@ -52,15 +52,8 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: sbom --format cyclonedx1.4+json
+          command: sbom --format cyclonedx1.4+json --json-file-output mySBOM.json
 
-      - name: Monitoring sbom
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: sbom monitor --experimental
 
           
 
