@@ -33,7 +33,7 @@ jobs:
         run: mvn install -DskipTests
 
       - name: Set up Snyk CLI
-        uses: snyk/actions/setup@v3
+        uses: actions/checkout@master
 
       - name: Run Snyk Test on All Projects
         env:
