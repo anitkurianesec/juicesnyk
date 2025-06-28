@@ -32,9 +32,15 @@ jobs:
       - name: Build Maven project
         run: mvn install -DskipTests
 
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@v1.12.0
+      - name: Install Snyk CLI
+        uses: snyk/actions/setup@v1
+
+      - name: Run Snyk Test on All Projects
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --all-projects --exit-code=0
+        run: snyk test --all-projects --exit-code=0
+
+      - name: Optional: Upload results to Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk monitor --all-projects
