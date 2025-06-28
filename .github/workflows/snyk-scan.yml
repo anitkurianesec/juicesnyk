@@ -52,7 +52,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: sbom 
+          command: sbom --format cyclonedx1.4+json
 
       - name: Monitoring sbom
         uses: snyk/actions/node@master
@@ -60,7 +60,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: sbom monitor
+          command: sbom monitor --experimental
 
           
 
