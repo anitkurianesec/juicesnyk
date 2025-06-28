@@ -29,6 +29,8 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           command: test
+name: Example workflow using Snyk
+on: push
 jobs:
   security:
     runs-on: ubuntu-latest
