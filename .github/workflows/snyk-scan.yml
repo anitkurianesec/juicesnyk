@@ -1,13 +1,15 @@
-name: Snyk Vulnerability Scan
+name: Snyk Security Scan
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  snyk_scan:
+  security:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -15,13 +17,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18'
 
-      - name: Install dependencies
+      - name: Install Node dependencies
         run: npm install
 
-      - name: Snyk Open Source Scan
-        uses: snyk/actions/node@master
+      - name: Set up Java and Maven
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build Maven project
+        run: mvn install -DskipTests
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@v1.12.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
