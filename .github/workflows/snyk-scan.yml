@@ -16,23 +16,33 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-            node-version: '18'
+          node-version: '18'
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v1
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          command: test
+
+      - name: Monitor project with Snyk
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          registry: ghcr.io
-          username: esecdj
-          password: ${{ secrets.GHCR_TOKEN }}
+          command: monitor
 
-      - name: Testing for Code Vulnerabilities
+      - name: Testing for Code Vulnerabilties
         uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: code test
-
 
       - name: Generating SBOM
         uses: snyk/actions/node@master
@@ -42,10 +52,8 @@ jobs:
         with:
           command: sbom --format cyclonedx1.4+json --json-file-output mySBOM.json
 
-    
-
-
-
-          
-
-     
+      - name: Upload SBOM file
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-sbom
+          path: mySBOM.json
