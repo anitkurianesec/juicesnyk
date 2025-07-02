@@ -16,42 +16,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+            node-version: '18'
 
-      - name: Install dependencies
-        run: npm install
-        
-
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          command: test
-
-      - name: Monitor project with Snyk
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Log in to GHCR
+        uses: docker/login-action@v1
         with:
-          command: monitor
+          registry: ghcr.io
+          username: esecdj
+          password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Log in to GitHub Container Registry
-        run:  docker login ghcr.io -u esecdj --password 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
-
-      - name: Build and push the Docker image
-        run: |
-          docker build . --tag ghcr.io/anitkurianesec/snyktest:latest
-          docker push ghcr.io/anitkurianesec/snyktest:latest
-
-      - name: Testing for Code Vulnerabilties
+      - name: Testing for Code Vulnerabilities
         uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: code test
+
 
       - name: Generating SBOM
         uses: snyk/actions/node@master
