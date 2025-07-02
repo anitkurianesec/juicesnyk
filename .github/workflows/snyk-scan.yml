@@ -38,7 +38,7 @@ jobs:
           command: monitor
 
       - name: Log in to GitHub Container Registry
-        run:  docker login ghcr.io -u anitkurianesec --password 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
+        run:  docker login ghcr.io -u anitkurianesec --password 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
 
       - name: Build and push the Docker image
         run: |
