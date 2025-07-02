@@ -36,6 +36,14 @@ jobs:
         with:
           command: monitor
 
+      - name: Log in to GitHub Container Registry
+        run:  docker login ghcr.io -u anitkurianesec --password-eSec@12345
+
+      - name: Build and push the Docker image
+        run: |
+          docker build . --tag ghcr.io/anitkurianesec/snyktest:latest
+          docker push ghcr.io/anitkurianesec/snyktest:latest
+
       - name: Testing for Code Vulnerabilties
         uses: snyk/actions/node@master
         continue-on-error: true
@@ -52,11 +60,7 @@ jobs:
         with:
           command: sbom --format cyclonedx1.4+json --json-file-output mySBOM.json
 
-      - name: Upload SBOM file
-        uses: actions/upload-artifact@v4
-        with:
-          name: snyk-sbom
-          path: mySBOM.json
+    
 
 
 
