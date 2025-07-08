@@ -27,7 +27,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           command: test
-          args: --severity-threshold=high
+          
 
       - name: Monitor project with Snyk
         uses: snyk/actions/node@master
