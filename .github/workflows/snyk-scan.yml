@@ -27,6 +27,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           command: test
+          
 
       - name: Monitor project with Snyk
         uses: snyk/actions/node@master
@@ -57,9 +58,3 @@ jobs:
         with:
           name: snyk-sbom
           path: mySBOM.json
-
-
-
-          
-
-     
