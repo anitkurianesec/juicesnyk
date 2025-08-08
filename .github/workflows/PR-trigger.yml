@@ -20,7 +20,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install ethers@^5.7.2 --save
+        run: npm install 
 
       - name: Run Build
         run: npm run build
