@@ -1,8 +1,26 @@
+name: PR Build
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Run Snyk Code Test and save console output
       - name: Run Snyk Code Test
         run: snyk code test > snyk-output.txt || true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      # Parse Snyk console output for High/Medium/Low counts
       - name: Parse Vulnerability Summary
         run: |
           SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1)
