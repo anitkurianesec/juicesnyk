@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Run snyk with JSON output
+      # Run Snyk Code Test and output JSON
       - name: Run Snyk Code Test
         uses: snyk/actions/node@master
         continue-on-error: true
@@ -26,9 +26,9 @@ jobs:
       # Parse results and apply custom fail logic
       - name: Check Severity Counts
         run: |
-          HIGH=$(jq '[.runs[].results[].ruleId as $rid | .runs[].tool.driver.rules[] | select(.id == $rid and .properties.severity == "high")] | length' snyk-results.json)
-          MEDIUM=$(jq '[.runs[].results[].ruleId as $rid | .runs[].tool.driver.rules[] | select(.id == $rid and .properties.severity == "medium")] | length' snyk-results.json)
-          LOW=$(jq '[.runs[].results[].ruleId as $rid | .runs[].tool.driver.rules[] | select(.id == $rid and .properties.severity == "low")] | length' snyk-results.json)
+          HIGH=$(jq '[.vulnerabilities[] | select(.severity == "high")] | length' snyk-results.json)
+          MEDIUM=$(jq '[.vulnerabilities[] | select(.severity == "medium")] | length' snyk-results.json)
+          LOW=$(jq '[.vulnerabilities[] | select(.severity == "low")] | length' snyk-results.json)
 
           echo "High vulnerabilities: $HIGH"
           echo "Medium vulnerabilities: $MEDIUM"
