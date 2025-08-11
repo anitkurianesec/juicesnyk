@@ -26,14 +26,14 @@ jobs:
       # Parse results and apply custom fail logic
       - name: Check Severity Counts
         run: |
-          HIGH=$(jq '[.vulnerabilities[] | select(.severity == "high")] | length' snyk-results.json)
-          MEDIUM=$(jq '[.vulnerabilities[] | select(.severity == "medium")] | length' snyk-results.json)
-          LOW=$(jq '[.vulnerabilities[] | select(.severity == "low")] | length' snyk-results.json)
-
+          HIGH=$(jq '[.vulnerabilities[]? // empty | select(.severity == "high")] | length' snyk-results.json)
+          MEDIUM=$(jq '[.vulnerabilities[]? // empty | select(.severity == "medium")] | length' snyk-results.json)
+          LOW=$(jq '[.vulnerabilities[]? // empty | select(.severity == "low")] | length' snyk-results.json)
+      
           echo "High vulnerabilities: $HIGH"
           echo "Medium vulnerabilities: $MEDIUM"
           echo "Low vulnerabilities: $LOW"
-
+      
           if [ "$HIGH" -gt 0 ]; then
             echo "Failing: High vulnerabilities found."
             exit 1
