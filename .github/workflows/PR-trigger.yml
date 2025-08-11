@@ -18,6 +18,10 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
+      # Install dependencies for SCA scan
+      - name: Install Dependencies
+        run: npm install
+
       # Run Snyk Code Test and save output to file
       - name: Run Snyk Test
         run: snyk test 
