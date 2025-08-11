@@ -1,40 +1,15 @@
-name: PR Build
-
-on:
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      # Run Snyk Code Test and output SARIF JSON
       - name: Run Snyk Code Test
-        uses: snyk/actions/node@master
-        continue-on-error: true
+        run: snyk code test > snyk-output.txt || true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: code test --json-file-output=snyk-results.json
 
-      - name: Upload Snyk Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: snyk-results
-          path: snyk-results.json
-
-      # Parse SARIF results and apply custom fail logic
-      - name: Check Severity Counts
+      - name: Parse Vulnerability Summary
         run: |
-          HIGH=$(jq '[.runs[].results[] as $r | .runs[].tool.driver.rules[] | select(.id == $r.ruleId and .properties.severity == "high")] | length' snyk-results.json)
-          MEDIUM=$(jq '[.runs[].results[] as $r | .runs[].tool.driver.rules[] | select(.id == $r.ruleId and .properties.severity == "medium")] | length' snyk-results.json)
-          LOW=$(jq '[.runs[].results[] as $r | .runs[].tool.driver.rules[] | select(.id == $r.ruleId and .properties.severity == "low")] | length' snyk-results.json)
+          SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1)
+
+          HIGH=$(echo "$SUMMARY_LINE" | awk '{print $1}')
+          MEDIUM=$(echo "$SUMMARY_LINE" | awk '{print $3}')
+          LOW=$(echo "$SUMMARY_LINE" | awk '{print $5}')
 
           echo "High vulnerabilities: $HIGH"
           echo "Medium vulnerabilities: $MEDIUM"
