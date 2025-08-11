@@ -28,11 +28,17 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      - name: Show SAST Output
+        run: cat snyk-output.txt
+
       # Step 2: Run SCA (Snyk Open Source Test)
       - name: Run Snyk SCA Test
         run: snyk test > scascan.txt || true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Show SCA Output
+        run: cat scascan.txt
 
       # Step 3: Analyse SCA Scan Results
       - name: Analyse SCA Scan Results
