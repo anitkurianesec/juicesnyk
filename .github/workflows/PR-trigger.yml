@@ -16,11 +16,12 @@ jobs:
 
       # Run snyk with JSON output
       - name: Run Snyk Code Test
-        id: snyk
-        run: |
-          snyk code test --json > snyk-results.json || true
+        uses: snyk/actions/node@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: code test --json-file-output=snyk-results.json
 
       # Parse results and apply custom fail logic
       - name: Check Severity Counts
