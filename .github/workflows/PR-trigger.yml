@@ -20,29 +20,9 @@ jobs:
 
       # Run Snyk Code Test and save output to file
       - name: Run Snyk Test
-        run: snyk test > snyk-output.txt || true
+        run: snyk test 
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       # Parse vulnerability summary from output
-      - name: Parse Vulnerability Summary
-        run: |
-          SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1)
-
-          HIGH=$(echo "$SUMMARY_LINE" | awk '{print $1}')
-          MEDIUM=$(echo "$SUMMARY_LINE" | awk '{print $3}')
-          LOW=$(echo "$SUMMARY_LINE" | awk '{print $5}')
-
-          echo "High vulnerabilities: $HIGH"
-          echo "Medium vulnerabilities: $MEDIUM"
-          echo "Low vulnerabilities: $LOW"
-
-          if [ "$HIGH" -gt 0 ]; then
-            echo "Failing: High vulnerabilities found."
-            exit 1
-          elif [ "$HIGH" -eq 0 ] && [ "$MEDIUM" -gt 10 ]; then
-            echo "Failing: More than 10 medium vulnerabilities found."
-            exit 1
-          else
-            echo "Severity threshold check passed."
-          fi
+    
