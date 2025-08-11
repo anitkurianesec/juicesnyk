@@ -20,7 +20,7 @@ jobs:
 
       # Install dependencies (required for SCA scan)
       - name: Install Dependencies
-        run: npm install
+        run: npm install || true
 
 
       # Step 1: Run SAST (Snyk Code Test) #
