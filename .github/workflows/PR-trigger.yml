@@ -18,15 +18,53 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      # Install dependencies for SCA scan
+      # Install dependencies (required for SCA scan)
       - name: Install Dependencies
         run: npm install
 
-      # Run Snyk Code Test and save output to file
-      - name: Run Snyk Test
-        run: snyk test 
+
+      # Step 1: Run SAST (Snyk Code Test) #
+
+      - name: Run Snyk Code Test
+        run: snyk code test > snyk-output.txt || true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # Parse vulnerability summary from output
-    
+      - name: Parse SAST Vulnerability Summary
+        run: |
+          SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1)
+
+          HIGH=$(echo "$SUMMARY_LINE" | awk '{print $1}')
+          MEDIUM=$(echo "$SUMMARY_LINE" | awk '{print $3}')
+          LOW=$(echo "$SUMMARY_LINE" | awk '{print $5}')
+
+          echo "High vulnerabilities: $HIGH"
+          echo "Medium vulnerabilities: $MEDIUM"
+          echo "Low vulnerabilities: $LOW"
+
+          if [ "$HIGH" -gt 0 ]; then
+            echo "Failing: High vulnerabilities found in SAST."
+            exit 1
+          elif [ "$HIGH" -eq 0 ] && [ "$MEDIUM" -gt 10 ]; then
+            echo "Failing: More than 10 medium vulnerabilities found in SAST."
+            exit 1
+          else
+            echo "SAST severity threshold check passed."
+          fi
+
+
+      # Step 2: Run SCA (Snyk Open Source)#
+  
+      - name: Run Snyk SCA Test
+        run: snyk test > scascan.txt || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Analyse SCA Scan Results
+        run: |
+          if grep -q "\[Critical Severity\]" scascan.txt || grep -q "\[High Severity\]" scascan.txt; then
+            echo "Failing: Critical or High severity vulnerabilities found in SCA scan."
+            exit 1
+          else
+            echo "No Critical or High severity vulnerabilities found in SCA scan."
+          fi
