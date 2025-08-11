@@ -44,16 +44,16 @@ jobs:
       - name: Analyse SCA Scan Results
         run: |
           if grep -q "\[Critical Severity\]" scascan.txt || grep -q "\[High Severity\]" scascan.txt; then
-            echo "Failing: Critical or High severity vulnerabilities found in SCA scan."
-            exit 1
+            echo "Critical or High severity vulnerabilities found in SCA scan."
+            echo "SCA_FAIL=true" >> $GITHUB_ENV
           else
             echo "No Critical or High severity vulnerabilities found in SCA scan."
           fi
 
-      # Step 4: Parse SAST Vulnerability Summary
+      # Step 4: Parse SAST Vulnerability Summary 
       - name: Parse SAST Vulnerability Summary
         run: |
-          SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1)
+          SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1 || echo "")
 
           HIGH=$(echo "$SUMMARY_LINE" | awk '{print $1}')
           MEDIUM=$(echo "$SUMMARY_LINE" | awk '{print $3}')
@@ -64,11 +64,21 @@ jobs:
           echo "Low vulnerabilities: $LOW"
 
           if [ "$HIGH" -gt 0 ]; then
-            echo "Failing: High vulnerabilities found in SAST."
-            exit 1
+            echo "High vulnerabilities found in SAST."
+            echo "SAST_FAIL=true" >> $GITHUB_ENV
           elif [ "$HIGH" -eq 0 ] && [ "$MEDIUM" -gt 10 ]; then
-            echo "Failing: More than 10 medium vulnerabilities found in SAST."
-            exit 1
+            echo "More than 10 medium vulnerabilities found in SAST."
+            echo "SAST_FAIL=true" >> $GITHUB_ENV
           else
             echo "SAST severity threshold check passed."
+          fi
+
+      # Step 5: Final Fail Check
+      - name: Fail if any scan failed
+        run: |
+          if [ "${SCA_FAIL}" = "true" ] || [ "${SAST_FAIL}" = "true" ]; then
+            echo "Build failed due to vulnerabilities."
+            exit 1
+          else
+            echo "All checks passed."
           fi
