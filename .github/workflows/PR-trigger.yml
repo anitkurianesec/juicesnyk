@@ -14,13 +14,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Run Snyk Code Test and save console output
+      # Install Snyk CLI
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      # Run Snyk Code Test and save output to file
       - name: Run Snyk Code Test
         run: snyk code test > snyk-output.txt || true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # Parse Snyk console output for High/Medium/Low counts
+      # Parse vulnerability summary from output
       - name: Parse Vulnerability Summary
         run: |
           SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1)
