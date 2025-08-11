@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Run Snyk Code Test and output JSON
+      # Run Snyk Code Test and output SARIF JSON
       - name: Run Snyk Code Test
         uses: snyk/actions/node@master
         continue-on-error: true
@@ -23,17 +23,17 @@ jobs:
         with:
           command: code test --json-file-output=snyk-results.json
 
-      # Parse results and apply custom fail logic
+      # Parse SARIF results and apply custom fail logic
       - name: Check Severity Counts
         run: |
-          HIGH=$(jq '[.vulnerabilities[]? // empty | select(.severity == "high")] | length' snyk-results.json)
-          MEDIUM=$(jq '[.vulnerabilities[]? // empty | select(.severity == "medium")] | length' snyk-results.json)
-          LOW=$(jq '[.vulnerabilities[]? // empty | select(.severity == "low")] | length' snyk-results.json)
-      
+          HIGH=$(jq '[.runs[].results[] as $r | .runs[].tool.driver.rules[] | select(.id == $r.ruleId and .properties.severity == "high")] | length' snyk-results.json)
+          MEDIUM=$(jq '[.runs[].results[] as $r | .runs[].tool.driver.rules[] | select(.id == $r.ruleId and .properties.severity == "medium")] | length' snyk-results.json)
+          LOW=$(jq '[.runs[].results[] as $r | .runs[].tool.driver.rules[] | select(.id == $r.ruleId and .properties.severity == "low")] | length' snyk-results.json)
+
           echo "High vulnerabilities: $HIGH"
           echo "Medium vulnerabilities: $MEDIUM"
           echo "Low vulnerabilities: $LOW"
-      
+
           if [ "$HIGH" -gt 0 ]; then
             echo "Failing: High vulnerabilities found."
             exit 1
