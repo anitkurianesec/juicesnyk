@@ -23,6 +23,12 @@ jobs:
         with:
           command: code test --json-file-output=snyk-results.json
 
+      - name: Upload Snyk Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-results
+          path: snyk-results.json
+
       # Parse SARIF results and apply custom fail logic
       - name: Check Severity Counts
         run: |
