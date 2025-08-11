@@ -22,14 +22,29 @@ jobs:
       - name: Install Dependencies
         run: npm install || true
 
-
-      # Step 1: Run SAST (Snyk Code Test) #
-
+      # Step 1: Run SAST (Snyk Code Test)
       - name: Run Snyk Code Test
         run: snyk code test > snyk-output.txt || true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      # Step 2: Run SCA (Snyk Open Source Test)
+      - name: Run Snyk SCA Test
+        run: snyk test > scascan.txt || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # Step 3: Analyse SCA Scan Results
+      - name: Analyse SCA Scan Results
+        run: |
+          if grep -q "\[Critical Severity\]" scascan.txt || grep -q "\[High Severity\]" scascan.txt; then
+            echo "Failing: Critical or High severity vulnerabilities found in SCA scan."
+            exit 1
+          else
+            echo "No Critical or High severity vulnerabilities found in SCA scan."
+          fi
+
+      # Step 4: Parse SAST Vulnerability Summary
       - name: Parse SAST Vulnerability Summary
         run: |
           SUMMARY_LINE=$(grep "Summary:" -A 3 snyk-output.txt | tail -n 1)
@@ -50,21 +65,4 @@ jobs:
             exit 1
           else
             echo "SAST severity threshold check passed."
-          fi
-
-
-      # Step 2: Run SCA (Snyk Open Source)#
-  
-      - name: Run Snyk SCA Test
-        run: snyk test > scascan.txt || true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      - name: Analyse SCA Scan Results
-        run: |
-          if grep -q "\[Critical Severity\]" scascan.txt || grep -q "\[High Severity\]" scascan.txt; then
-            echo "Failing: Critical or High severity vulnerabilities found in SCA scan."
-            exit 1
-          else
-            echo "No Critical or High severity vulnerabilities found in SCA scan."
           fi
