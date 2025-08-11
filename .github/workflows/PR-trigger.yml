@@ -14,10 +14,31 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Snyk Code
-        uses: snyk/actions/node@master
-        continue-on-error: true
+      # Run snyk with JSON output
+      - name: Run Snyk Code Test
+        id: snyk
+        run: |
+          snyk code test --json > snyk-results.json || true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: code test
+
+      # Parse results and apply custom fail logic
+      - name: Check Severity Counts
+        run: |
+          HIGH=$(jq '[.runs[].results[].ruleId as $rid | .runs[].tool.driver.rules[] | select(.id == $rid and .properties.severity == "high")] | length' snyk-results.json)
+          MEDIUM=$(jq '[.runs[].results[].ruleId as $rid | .runs[].tool.driver.rules[] | select(.id == $rid and .properties.severity == "medium")] | length' snyk-results.json)
+          LOW=$(jq '[.runs[].results[].ruleId as $rid | .runs[].tool.driver.rules[] | select(.id == $rid and .properties.severity == "low")] | length' snyk-results.json)
+
+          echo "High vulnerabilities: $HIGH"
+          echo "Medium vulnerabilities: $MEDIUM"
+          echo "Low vulnerabilities: $LOW"
+
+          if [ "$HIGH" -gt 0 ]; then
+            echo "Failing: High vulnerabilities found."
+            exit 1
+          elif [ "$HIGH" -eq 0 ] && [ "$MEDIUM" -gt 10 ]; then
+            echo "Failing: More than 10 medium vulnerabilities found."
+            exit 1
+          else
+            echo "Severity threshold check passed."
+          fi
